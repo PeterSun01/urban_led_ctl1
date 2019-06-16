@@ -4,17 +4,18 @@
 #include "driver/uart.h"
 #include "driver/gpio.h"
 #include "Wallkey.h"
+#include "Pwm.h"
 
 
 #define UART1_TXD  (UART_PIN_NO_CHANGE)
-#define UART1_RXD  (GPIO_NUM_5)
+#define UART1_RXD  (GPIO_NUM_22)
 #define UART1_RTS  (UART_PIN_NO_CHANGE)
 #define UART1_CTS  (UART_PIN_NO_CHANGE)
 
 #define BUF_SIZE    100
 static const char *TAG = "WALLKEY";
 
-uint8_t Key_Id[4]={0x01,0x02,0x03,0x04};
+uint8_t Key_Id[4]={0x86,0x6d,0x02,0x00};
 
 static void Wallkey_Read_Task(void* arg);
 
@@ -60,11 +61,11 @@ int8_t Wallkey_Read(void)
             {
                 if(data_u1[9]==KEY_DOU_LEFT_UP)
                 {
-                    ESP_LOGI(TAG, "KEY_DOU_LEFT_UP");
+                    ESP_LOGI(TAG, "KEY_LEFT");
                 }
                 else if(data_u1[9]==KEY_DOU_LEFT_DOWN)
                 {
-                    ESP_LOGI(TAG, "KEY_DOU_LEFT_DOWN");
+                    ESP_LOGI(TAG, "KEY_RIGHT");
                 }
                 else if(data_u1[9]==KEY_DOU_RIGHT_UP)
                 {
@@ -91,12 +92,40 @@ int8_t Wallkey_Read(void)
     return   -1;       
 }
 
+
+
 static void Wallkey_Read_Task(void* arg)
 {
-    
+    uint8_t key_id;
     while(1)
     {
-        Wallkey_Read();
+        key_id=Wallkey_Read();
+        if((key_id==KEY_DOU_LEFT_UP)&&(Up_Light_Status==1))
+        {
+            Led_UP_W(0,5000);
+            Led_UP_Y(0,5000);
+            //vTaskDelay(5000 / portTICK_RATE_MS);
+            Up_Light_Status=0;
+        }
+        else if((key_id==KEY_DOU_LEFT_UP)&&(Up_Light_Status==0))
+        {
+            Up_Light_Status=1;
+            temp_hour=-1;
+            //vTaskDelay(10000 / portTICK_RATE_MS);
+        }
+        else if((key_id==KEY_DOU_LEFT_DOWN)&&(Down_Light_Status==1))
+        {
+           Led_DOWN_W(0,5000);
+           Led_DOWN_Y(0,5000);
+           Down_Light_Status=0;
+        }
+        else if((key_id==KEY_DOU_LEFT_DOWN)&&(Down_Light_Status==0))
+        {
+           Led_DOWN_W(50,5000);
+           Led_DOWN_Y(50,5000);
+           Down_Light_Status=1;
+        }
+
         vTaskDelay(10 / portTICK_RATE_MS);
     }  
 }

@@ -29,7 +29,6 @@ void Rtc_Read(int* year,int* month,int* day,int* hour,int* min,int* sec)
     time_t timep;
     struct tm *p;
     time (&timep);
-    timep=timep+28800;
     p=gmtime(&timep);
     *year=(1900+p->tm_year);
     *month=(1+p->tm_mon);
@@ -37,7 +36,7 @@ void Rtc_Read(int* year,int* month,int* day,int* hour,int* min,int* sec)
     *hour=p->tm_hour;
     *min=p->tm_min;
     *sec=p->tm_sec;
-    ESP_LOGI(TAG, "Read:%d-%d-%d %d:%d:%d",(1900+p->tm_year),(1+p->tm_mon),p->tm_mday,p->tm_hour,p->tm_min,p->tm_sec);
+    //ESP_LOGI(TAG, "Read:%d-%d-%d %d:%d:%d",(1900+p->tm_year),(1+p->tm_mon),p->tm_mday,p->tm_hour,p->tm_min,p->tm_sec);
     
     
     /*printf("%d\n",p->tm_sec); //获取当前秒

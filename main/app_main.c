@@ -15,6 +15,8 @@
 #include "SD25RTC.h"
 #include "Pwm.h"
 
+int year,month,day,hour,min,sec;
+
 void timer_periodic_cb(void *arg); 
 esp_timer_handle_t timer_periodic_handle = 0; //定时器句柄
 
@@ -30,10 +32,14 @@ void timer_periodic_cb(void *arg) //1ms中断一次
 {
   static int64_t timer_count = 0;
   timer_count++;
-  if (timer_count >= 3000) //3s
+  if (timer_count >= 10000) //10s
   {
     timer_count = 0;
     printf("[APP] Free memory: %d bytes\n", esp_get_free_heap_size());
+    printf("color_temp=%d\r\n",color_temp);
+    Rtc_Read(&year,&month,&day,&hour,&min,&sec);
+    printf("Time:%d-%d-%d %d:%d:%d\r\n",year,month,day,hour,min,sec);
+    
   }
 }
 
