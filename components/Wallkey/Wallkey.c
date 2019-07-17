@@ -102,8 +102,8 @@ static void Wallkey_Read_Task(void* arg)
         key_id=Wallkey_Read();
         if((key_id==KEY_DOU_LEFT_UP)&&(Up_Light_Status==1))
         {
-            Led_UP_W(0,5000);
-            Led_UP_Y(0,5000);
+            Led_UP_W(0,OFF_TIME);
+            Led_UP_Y(0,OFF_TIME);
             //vTaskDelay(5000 / portTICK_RATE_MS);
             Up_Light_Status=0;
         }
@@ -115,15 +115,14 @@ static void Wallkey_Read_Task(void* arg)
         }
         else if((key_id==KEY_DOU_LEFT_DOWN)&&(Down_Light_Status==1))
         {
-           Led_DOWN_W(0,5000);
-           Led_DOWN_Y(0,5000);
+           Led_DOWN_W(0,OFF_TIME);
+           Led_DOWN_Y(0,OFF_TIME);
            Down_Light_Status=0;
         }
         else if((key_id==KEY_DOU_LEFT_DOWN)&&(Down_Light_Status==0))
         {
-           Led_DOWN_W(50,5000);
-           Led_DOWN_Y(50,5000);
            Down_Light_Status=1;
+           temp_hour=-1;
         }
 
         vTaskDelay(10 / portTICK_RATE_MS);

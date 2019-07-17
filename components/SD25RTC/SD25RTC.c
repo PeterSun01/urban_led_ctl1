@@ -262,8 +262,8 @@ void sd25rtc_init(void)
 	//RtcWriteMulByte(0x30,8,Sram);//将8位ID写入0x30开始的用户存储区
 	RtcWriteOneByte(0x18,0x82);//打开充电
 	WriteOff();
-    //S_Time  SETRTC={0x00,0x10,0x11,0x07,0x16,0x06,0x19};	
-//                   00秒 10分 11时 周日 16日   6月 19年
+    S_Time  SETRTC={0x00,0x17,0x18,0x03,0x10,0x07,0x19};	
+            //       00秒 17分 10时 周3 10日   7月 19年
 	//printf("rtc write=%d\n",RtcWriteDate(&SETRTC));//设置时间
 	RtcReadDate(read_dat);//读取时间
 

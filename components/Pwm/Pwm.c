@@ -98,14 +98,16 @@ void Pwm_Init(void)
         ledc_update_duty(ledc_channel[ch].speed_mode, ledc_channel[ch].channel);
     }
 
-    printf("led start on\r\n");
-    Led_UP_W(50,5000);
-    Led_UP_Y(50,5000);
-    Led_DOWN_W(50,5000);
-    Led_DOWN_Y(50,5000);
+    temp_hour=-1;
 
-    vTaskDelay(10000 / portTICK_RATE_MS);
-    printf("led start on over\r\n");
+    // printf("led start on\r\n");
+    // Led_UP_W(50,5000);
+    // Led_UP_Y(50,5000);
+    // Led_DOWN_W(50,5000);
+    // Led_DOWN_Y(50,5000);
+
+    // vTaskDelay(10000 / portTICK_RATE_MS);
+    // printf("led start on over\r\n");
     
 
     xTaskCreate(Led_Time_Ctl_Task, "Led_Time_Ctl_Task", 2048, NULL, 10, NULL);
@@ -125,7 +127,7 @@ void Led_Time_Ctl_Task(void* arg)
     
     while(1)
     {
-        if(Up_Light_Status==1)
+        if((Up_Light_Status==1)||(Down_Light_Status==1))
         {
             Led_Time_Ctl();
         }
@@ -133,32 +135,74 @@ void Led_Time_Ctl_Task(void* arg)
     }  
 }
 
-void Led_Color_CTL(uint16_t color_temp)
+
+
+void Led_Color_CTL(uint16_t color_temp,int fade_time)
 {
     if(color_temp==3000)
     {
-        Led_UP_W(0,10000);
-        Led_UP_Y(100,10000);
+        if(Up_Light_Status==1)
+        {
+            Led_UP_W(0,fade_time);
+            Led_UP_Y(100,fade_time);
+        }
+        if(Down_Light_Status==1)   
+        {    
+            Led_DOWN_W(0,fade_time);
+            Led_DOWN_Y(100,fade_time);
+        }
     }
     else if(color_temp==3500)
     {
-        Led_UP_W(23,10000);
-        Led_UP_Y(67,10000);
+        if(Up_Light_Status==1)
+        {
+            Led_UP_W(23,fade_time);
+            Led_UP_Y(67,fade_time);
+        }
+        if(Down_Light_Status==1)   
+        {    
+            Led_DOWN_W(23,fade_time);
+            Led_DOWN_Y(67,fade_time);
+        }
     }  
     else if(color_temp==4000)
     {
-        Led_UP_W(45,10000);
-        Led_UP_Y(55,10000);
+        if(Up_Light_Status==1)
+        {
+            Led_UP_W(45,fade_time);
+            Led_UP_Y(55,fade_time);
+        }
+        if(Down_Light_Status==1)   
+        {    
+            Led_DOWN_W(45,fade_time);
+            Led_DOWN_Y(55,fade_time);   
+        }
     } 
     else if(color_temp==4500)
     {
-        Led_UP_W(72,10000);
-        Led_UP_Y(28,10000);
+        if(Up_Light_Status==1)
+        {
+            Led_UP_W(72,fade_time);
+            Led_UP_Y(28,fade_time);
+        }
+        if(Down_Light_Status==1)   
+        {    
+            Led_DOWN_W(72,fade_time);
+            Led_DOWN_Y(28,fade_time); 
+        }
     } 
     else if(color_temp==5000)
     {
-        Led_UP_W(100,10000);
-        Led_UP_Y(0,10000);
+        if(Up_Light_Status==1)
+        {
+            Led_UP_W(100,fade_time);
+            Led_UP_Y(0,fade_time);
+        }
+        if(Down_Light_Status==1)   
+        {    
+            Led_DOWN_W(100,fade_time);
+            Led_DOWN_Y(0,fade_time);
+        }
     } 
     printf("Led_Color_CTL\r\n"); 
 }
@@ -200,35 +244,44 @@ void Led_Time_Ctl(void)
             color_temp=3500;
         }  
         printf("color_temp=%d\r\n",color_temp);
-        temp_hour=hour; 
-        Led_Color_CTL(color_temp); 
+        if(temp_hour==-1)//开机或者开关控制，1s到达指定亮度
+        {
+            temp_hour=hour; 
+            Led_Color_CTL(color_temp,ON_TIME); 
+        }
+        else
+        {
+            temp_hour=hour; 
+            Led_Color_CTL(color_temp,COLOR_CHANGE_TIME); 
+        }
+        
     }
 }
 
 
 
-void Led_UP_W(uint16_t duty,uint16_t fade_time)//上白光控制，duty0-100
+void Led_UP_W(uint16_t duty,int fade_time)//上白光控制，duty0-100
 {
     uint16_t ctl_duty=8192-(uint16_t)(81.92*(float)duty);//将0-100变为8192-0
     printf("Led_UP_W duty=%d,ctl_duty=%d\r\n",duty,ctl_duty);
     ledc_set_fade_with_time(ledc_channel[0].speed_mode,ledc_channel[0].channel, ctl_duty, fade_time);
     ledc_fade_start(ledc_channel[0].speed_mode,ledc_channel[0].channel, LEDC_FADE_NO_WAIT);
 }
-void Led_UP_Y(uint16_t duty,uint16_t fade_time)//上黄光控制，duty0-100
+void Led_UP_Y(uint16_t duty,int fade_time)//上黄光控制，duty0-100
 {
     uint16_t ctl_duty=8192-(uint16_t)(81.92*(float)duty);//将0-100变为8192-0
     printf("Led_UP_Y duty=%d,ctl_duty=%d\r\n",duty,ctl_duty);
     ledc_set_fade_with_time(ledc_channel[1].speed_mode,ledc_channel[1].channel, ctl_duty, fade_time);
     ledc_fade_start(ledc_channel[1].speed_mode,ledc_channel[1].channel, LEDC_FADE_NO_WAIT);
 }
-void Led_DOWN_W(uint16_t duty,uint16_t fade_time)//下白光控制，duty0-100
+void Led_DOWN_W(uint16_t duty,int fade_time)//下白光控制，duty0-100
 {
     uint16_t ctl_duty=8192-(uint16_t)(81.92*(float)duty);//将0-100变为8192-0
     printf("Led_DOWN_W duty=%d,ctl_duty=%d\r\n",duty,ctl_duty);
     ledc_set_fade_with_time(ledc_channel[2].speed_mode,ledc_channel[2].channel, ctl_duty, fade_time);
     ledc_fade_start(ledc_channel[2].speed_mode,ledc_channel[2].channel, LEDC_FADE_NO_WAIT);
 }
-void Led_DOWN_Y(uint16_t duty,uint16_t fade_time)//下黄光控制，duty0-100
+void Led_DOWN_Y(uint16_t duty,int fade_time)//下黄光控制，duty0-100
 {
     uint16_t ctl_duty=8192-(uint16_t)(81.92*(float)duty);//将0-100变为8192-0
     printf("Led_DOWN_Y duty=%d,ctl_duty=%d\r\n",duty,ctl_duty);
